@@ -15,3 +15,47 @@ LISTEN      0           4096             127.0.0.53%lo:53                    0.0
 LISTEN      0           511                       [::]:80                       [::]:*                                                                                                              
 LISTEN      0           4096                      [::]:22                       [::]:*                                                                                                              
 ubuntu@tuomas1linux:~$ 
+
+## Request Path – Application Architecture
+
+The communication between the user, the application, the language model, and the database follows this request path:
+
+```text
+┌──────────────────────┐
+│ Browser              │
+│ Chat interface       │
+└──────────┬───────────┘
+           │ HTTP
+           ▼
+┌──────────────────────┐
+│ Nginx                │
+│ Port 80              │
+└──────────┬───────────┘
+           │ Unix socket
+           ▼
+┌──────────────────────┐
+│ Gunicorn             │
+│ Flask application   │
+│ /run/chatapp/        │
+│ gunicorn.sock        │
+└──────────┬───────────┘
+           │
+           ├──────────────────────┐
+           │                      │
+           ▼                      ▼
+┌──────────────────────┐  ┌──────────────────────┐
+│ Ollama               │  │ MariaDB              │
+│ Qwen2.5:0.5b         │  │ Chat history         │
+│ 127.0.0.1:11434      │  │ chatapp database    │
+└──────────────────────┘  └──────────────────────┘
+```
+
+### Request Flow
+
+1. The user enters a message in the chat interface in the browser.
+2. The browser sends an HTTP request to Nginx at `/viikko5/`.
+3. Nginx forwards the request to Gunicorn through the Unix socket `/run/chatapp/gunicorn.sock`.
+4. Gunicorn runs the Flask application, which processes the user's message.
+5. Flask sends the prompt to the local Ollama model server at `127.0.0.1:11434`.
+6. Ollama uses the Qwen2.5:0.5b language model to generate a response.
+7. Flask stores the conversation in the MariaDB database and returns the response to the browser through Nginx.
