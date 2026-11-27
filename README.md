@@ -59,3 +59,10 @@ The communication between the user, the application, the language model, and the
 5. Flask sends the prompt to the local Ollama model server at `127.0.0.1:11434`.
 6. Ollama uses the Qwen2.5:0.5b language model to generate a response.
 7. Flask stores the conversation in the MariaDB database and returns the response to the browser through Nginx.
+a description of the pipeline: what runs on pull requests, what runs on main, and how a deployment is verified:
+the Linux users, database users, file ownership and permissions you used, and where the secrets are stored
+how you added /viikko5/ to Nginx without affecting other sites or pages
+your model choice and the server's memory and disk usage
+if you completed Week 4: whether the chat database is replicated to server B, and why or why not
+the required test results
+one problem you solved or one thing you learned
